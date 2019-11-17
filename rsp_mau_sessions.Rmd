@@ -14,7 +14,6 @@ library(glue)
 library(DT)
 
 rsp_log_dir <- 'audit/r-sessions'
-rsp_mau_fee <- 1
 ```
 
 ```{r logs, message=FALSE}

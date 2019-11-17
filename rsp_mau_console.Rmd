@@ -13,7 +13,7 @@ library(lubridate)
 library(glue)
 library(DT)
 
-rsp_log_dir <- 'audit-test/r-console'
+rsp_log_dir <- 'audit/r-console'
 ```
 
 ```{r logs, message=FALSE}
