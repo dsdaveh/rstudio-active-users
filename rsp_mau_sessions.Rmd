@@ -1,0 +1,110 @@
+---
+title: "MAU Counts from RStudio Server Pro r-sessions.logs"
+output: 
+  html_notebook:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(lubridate)
+library(glue)
+library(DT)
+
+rsp_log_dir <- 'audit/r-sessions'
+rsp_mau_fee <- 1
+```
+
+```{r logs, message=FALSE}
+read_log <- function(x) {
+  readr::read_csv(x) %>% 
+    mutate(logfile = x) %>% 
+    mutate(time = as_datetime(timestamp/1e3),
+           month = paste(year(time), month(time))) %>% 
+    filter(time >= today() - dyears(1)) %>% 
+    filter(type == "session_start")
+}
+
+log_files <- list.files(rsp_log_dir, "*\\.csv", full.names = TRUE)
+logs <- map_df(log_files, read_log) 
+
+```
+
+
+Log files to be processed: <li>
+`r log_files`
+</li>
+
+## Session Counts by user by month
+
+```{r}
+monthly_stats <- logs %>% 
+  group_by(username, month) %>% 
+  summarise(session_starts = n()) %>% 
+  spread(month, session_starts, fill = 0) 
+
+user_stats <- logs %>% 
+  group_by(logfile, username) %>% 
+  summarise(ts_first = min(time),
+            ts_last = max(time)) %>% 
+  group_by(username) %>% 
+  summarise(product = 'RSP',
+            n_servers = n(),
+            ts_first = min(ts_first),
+            ts_last = max(ts_first),
+            access = NA) %>% 
+  left_join(monthly_stats, by = 'username') 
+
+
+named_users <- user_stats %>% nrow()
+```
+
+`r glue('This server has had {named_users} named users since {today() - dyears(1)}.')
+`
+```{r}
+user_stats %>% 
+  select(`User ID` = username, Product = product, `# of Servers` = n_servers, 
+         `First Session` = ts_first, `Last Session` = ts_last, starts_with('20'))  %>% 
+  datatable() %>% 
+  formatDate(c('First Session', 'Last Session'))
+```
+```{r}
+csv_mau <- glue('rsp_active_users.csv')
+csv_fee <- glue('rsp_mau_fees.csv')
+write_csv(user_stats, csv_mau )
+```
+
+Data written to _*`r csv_mau`*_
+
+
+## Fees 
+
+Based on $`r rsp_mau_fee` / RSP MAU
+
+```{r}
+monthly_fees_long <- logs %>% 
+  group_by(username, month) %>% 
+  summarise(fee = rsp_mau_fee * (n() > 1)) 
+
+monthly_fees <- monthly_fees_long %>% 
+  spread(month, fee, fill = 0) 
+
+total_fees <- sum(monthly_fees_long$fee)
+
+data_cols <- names(monthly_fees)[starts_with('20', vars = names(monthly_fees))]
+monthly_fees %>% 
+  select(`User ID` = username, starts_with('20'))  %>% 
+  datatable() %>% 
+  formatCurrency(data_cols, digits = 0)
+```
+
+Total fees for `r min(user_stats$ts_first)` thru `r max(user_stats$ts_last)` are $`r round(total_fees)`
+
+```{r}
+csv_fee <- glue('rsp_mau_fees.csv')
+write_csv(monthly_fees, csv_fee )
+```
+
+Data written to _*`r csv_fee`*_
