@@ -1,5 +1,5 @@
 ---
-title: "MAU Counts from RStudio Server Pro r-sessions.logs"
+title: "MAU Counts from RStudio Server Pro r-console logs"
 output: 
   html_notebook:
     code_folding: hide
@@ -13,7 +13,7 @@ library(lubridate)
 library(glue)
 library(DT)
 
-rsp_log_dir <- 'audit/r-sessions'
+rsp_log_dir <- 'audit/r-console'
 rsp_mau_fee <- 1
 ```
 
@@ -22,9 +22,10 @@ read_log <- function(x) {
   readr::read_csv(x) %>% 
     mutate(logfile = x) %>% 
     mutate(time = as_datetime(timestamp/1e3),
-           month = paste(year(time), month(time))) %>% 
+           month = paste(year(time), month(time)),
+           hour = paste(year(time), month(time), day(time), hour(time), sep = '-')) %>% 
     filter(time >= today() - dyears(1)) %>% 
-    filter(type == "session_start")
+    filter(type == "input")
 }
 
 log_files <- list.files(rsp_log_dir, "*\\.csv", full.names = TRUE)
@@ -37,13 +38,13 @@ Log files to be processed: <li>
 `r paste(log_files, collapse = '<li>')`
 </li>
 
-## Session Counts by user by month
+## Active Hours by user by month
 
 ```{r}
 monthly_stats <- logs %>% 
-  group_by(username, month) %>% 
-  summarise(session_starts = n()) %>% 
-  spread(month, session_starts, fill = 0) 
+  count(username, month, hour, name = 'hourly_activity') %>% 
+  count(username, month, name = 'n_hours') %>% 
+  spread(month, n_hours, fill = 0) 
 
 user_stats <- logs %>% 
   group_by(logfile, username) %>% 
@@ -71,7 +72,7 @@ user_stats %>%
   formatDate(c('First Session', 'Last Session'))
 ```
 ```{r}
-csv_mau <- glue('rsp_active_users.csv')
+csv_mau <- glue('rsp_active_user_hours.csv')
 csv_fee <- glue('rsp_mau_fees.csv')
 write_csv(user_stats, csv_mau )
 ```
