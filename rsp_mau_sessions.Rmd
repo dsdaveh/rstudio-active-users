@@ -79,32 +79,3 @@ write_csv(user_stats, csv_mau )
 Data written to _*`r csv_mau`*_
 
 
-## Fees 
-
-Based on $`r rsp_mau_fee` / RSP MAU
-
-```{r}
-monthly_fees_long <- logs %>% 
-  group_by(username, month) %>% 
-  summarise(fee = rsp_mau_fee * (n() > 1)) 
-
-monthly_fees <- monthly_fees_long %>% 
-  spread(month, fee, fill = 0) 
-
-total_fees <- sum(monthly_fees_long$fee)
-
-data_cols <- names(monthly_fees)[starts_with('20', vars = names(monthly_fees))]
-monthly_fees %>% 
-  select(`User ID` = username, starts_with('20'))  %>% 
-  datatable() %>% 
-  formatCurrency(data_cols, digits = 0)
-```
-
-Total fees for `r min(user_stats$ts_first)` thru `r max(user_stats$ts_last)` are $`r round(total_fees)`
-
-```{r}
-csv_fee <- glue('rsp_mau_fees.csv')
-write_csv(monthly_fees, csv_fee )
-```
-
-Data written to _*`r csv_fee`*_
