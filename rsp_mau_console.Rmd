@@ -18,7 +18,12 @@ rsp_log_dir <- 'audit/r-console'
 
 ```{r logs, message=FALSE}
 read_log <- function(x) {
-  readr::read_csv(x) %>% 
+  readr::read_csv(x, col_types = cols(
+    data = col_character(), 
+    pid = col_double(), project = col_character(), 
+    session_id = col_character(), timestamp = col_double(), 
+    type = col_character(), username = col_character())
+    ) %>% 
     mutate(logfile = x) %>% 
     mutate(time = as_datetime(timestamp/1e3),
            month = paste(year(time), month(time)),
