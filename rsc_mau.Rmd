@@ -78,7 +78,7 @@ user_stats %>%
   formatDate(c('First Session', 'Last Session'))
 ```
 ```{r}
-csv_mau <- glue('rsp_active_user_hours.csv')
+csv_mau <- glue('rsc_active_user_hours.csv')
 write_csv(user_stats, csv_mau )
 ```
 
