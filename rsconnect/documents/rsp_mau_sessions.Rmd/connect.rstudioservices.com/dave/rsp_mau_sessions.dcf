@@ -1,0 +1,12 @@
+name: rsp_mau_sessions
+title: rsp_mau_sessions
+username: dave
+account: dave
+server: connect.rstudioservices.com
+hostUrl: https://connect.rstudioservices.com/__api__
+appId: 466
+bundleId: 2561
+url: https://connect.rstudioservices.com/content/466/
+when: 1574028616.93355
+asMultiple: FALSE
+asStatic: TRUE
