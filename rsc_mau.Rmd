@@ -1,0 +1,88 @@
+---
+title: "MAU Counts from RStudio Connect"
+output: 
+  html_notebook:
+    code_folding: hide
+---
+
+Get the logs from RStudio Connect via this [support article](https://support.rstudio.com/hc/en-us/articles/360007435274-Counting-Named-Users-in-RStudio-Connect-and-RStudio-Server-Pro)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(lubridate)
+library(glue)
+library(DT)
+
+log_dir <- 'audit/rs-connect'
+```
+
+```{r logs, message=FALSE}
+read_log <- function(x) {
+  readr::read_csv(x) %>% 
+    mutate(logfile = x) %>% 
+    mutate(month = paste(year(Time), month(Time)),
+           hour = paste(year(Time), month(Time), day(Time), hour(Time), sep = '-')) %>% 
+    filter(Time >= today() - dyears(1)) 
+}
+
+log_files <- list.files(log_dir, "*\\.csv", full.names = TRUE)
+logs <- map_df(log_files, read_log) 
+```
+
+
+Log files to be processed: <li>
+`r paste(log_files, collapse = '<li>')`
+</li>
+
+## Active Hours by user by month
+
+```{r}
+# use the latest description in case UserID has multiple descriptions
+user_desc <- logs %>% 
+  group_by(UserId) %>% 
+  arrange(desc(Time)) %>% 
+  slice(1) %>% 
+  select(UserId, UserDescription)
+
+monthly_stats <- logs %>% 
+  count(UserId, month, hour, name = 'hourly_activity') %>% 
+  count(UserId, month, name = 'n_hours') %>% 
+  spread(month, n_hours, fill = 0) 
+
+user_stats <- logs %>% 
+  group_by(logfile, UserId) %>% 
+  summarise(ts_first = min(Time),
+            ts_last = max(Time)) %>% 
+  group_by(UserId) %>% 
+  summarise(product = 'RSC',
+            n_servers = n(),
+            ts_first = min(ts_first),
+            ts_last = max(ts_last),
+            access = NA) %>% 
+  left_join(monthly_stats, by = 'UserId') %>% 
+  left_join(user_desc, by = 'UserId') %>% 
+  filter(UserId > 0)
+
+named_users <- user_stats %>% nrow()
+```
+
+`r glue('This server has had {named_users} named users since {today() - dyears(1)}.')
+`
+```{r}
+user_stats %>% 
+  select(`User ID` = UserId, `User Description` = UserDescription, Product = product, `# of Servers` = n_servers, 
+         `First Session` = ts_first, `Last Session` = ts_last, starts_with('20'))  %>% 
+  datatable() %>% 
+  formatDate(c('First Session', 'Last Session'))
+```
+```{r}
+csv_mau <- glue('rsc_active_user_hours.csv')
+write_csv(user_stats, csv_mau )
+```
+
+Data written to _*`r csv_mau`*_
+
+---
+https://github.com/dsdaveh/rstelemetry

@@ -58,7 +58,7 @@ user_stats <- logs %>%
   summarise(product = 'RSP',
             n_servers = n(),
             ts_first = min(ts_first),
-            ts_last = max(ts_first),
+            ts_last = max(ts_last),
             access = NA) %>% 
   left_join(monthly_stats, by = 'username') 
 
