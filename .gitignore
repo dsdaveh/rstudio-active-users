@@ -5,3 +5,4 @@
 rsp_*.csv
 rstelemetry.Rproj
 audit-test
+*.html
