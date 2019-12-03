@@ -1,7 +1,5 @@
-# rstelemetry
-tools for extracting telemetry metrics from RStudio pro products
-
-*This is still a work in progress*
+# rstudio-active-users
+tools for extracting active user metrics from RStudio pro products
 
 1. Copy log files to directory with read access. 
 2. Run the  .Rmd file below that corresponds with the log file type
