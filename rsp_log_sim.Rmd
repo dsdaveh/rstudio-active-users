@@ -1,0 +1,77 @@
+---
+title: "R Session Log Simulator"
+author: "Dave Hurst"
+output: html_notebook
+---
+
+Create a simulated log file for RSP
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(babynames)
+
+```
+```{r}
+output_log <- 'sim_log.csv'
+n_users <- 10
+avg_session_mins <- 60
+log_start <- ymd('2019-01-01')
+log_end <- today()
+```
+
+```{r}
+set.seed(19)
+usernames <- sample(babynames::babynames$name, n_users)
+
+# each user has a variable daily frequency
+user_frequency <- runif(n_users)
+
+user_sim <- function(userid = "name", freq = 0.5, simdate = ymd('2019-01-01')) {
+    #TODO : Vectorize
+    #TODO : Add Suspend and exits
+    
+    if (wday(simdate) < 2 & wday(simdate) > 6) return()
+    
+    # flip a coin (did the user use it today)
+    if (rbinom(1, 1, freq) == 0 ) return()
+    
+    # how long did they run it for?
+    session_length <- rlnorm(1, meanlog = log(avg_session_mins), sdlog = 1)
+    
+    #when did they start
+    session_start <- simdate + minutes(round(rnorm(1, mean = 12) *60))
+    session_end <- session_start + seconds(round(session_length) * 60)
+    
+    fake_pid <- runif(1, 1, 1000) %>% as.integer()
+    
+    log_lines <- c(
+        sprintf('%d, "%s", %d, "session_start", ""', fake_pid, userid, as.integer(session_start)),
+        sprintf('%d, "%s", %d, "session_quit", ""', fake_pid, userid, as.integer(session_end))
+    )
+
+    return(log_lines)
+}
+
+lines <- 'pid, username, timestamp, type, data'
+
+i = 1
+for (user in usernames) {
+    print(user)
+    isim <- log_start
+    while(isim <= log_end) {
+        get_lines <- user_sim(user, user_frequency[i], isim)
+        if (length(get_lines > 0)) lines <- c(lines, get_lines)
+        isim <- isim + days(1)
+        #if (rbinom(1, 1, .01)) print(isim)
+    } 
+    i = i+1
+}
+
+```
+```{r}
+write_lines(lines, output_log)
+sprintf("%d lines written to %s", length(lines), output_log)
+```
+
+
