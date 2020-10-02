@@ -1,7 +1,7 @@
 library(tidyverse)
 library(lubridate)
 
-log_path = '.'
+log_path = '~/Downloads/r-sessions'
 
 named_users <- map_df(list.files(path = log_path, pattern = "\\.csv", full.names = TRUE), readr::read_csv) %>%
     mutate(time = as_datetime(timestamp/1e3),
@@ -37,3 +37,5 @@ au_counts <- sprintf('%d (6mo), %s, %s, %s',
                      min(named_users$month),
                      max(named_users$month),
                      paste(mau_all$mau, collapse = ', '))
+
+message(au_counts)
