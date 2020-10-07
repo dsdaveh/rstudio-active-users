@@ -15,8 +15,9 @@ library(babynames)
 ```{r}
 output_log <- 'sim_log.csv'
 n_users <- 10
+daily_prob <- 0.1
 avg_session_mins <- 60
-log_start <- ymd('2019-01-01')
+log_start <- ymd('2020-01-01')
 log_end <- today()
 ```
 
@@ -34,7 +35,7 @@ user_sim <- function(userid = "name", freq = 0.5, simdate = ymd('2019-01-01')) {
     if (wday(simdate) < 2 & wday(simdate) > 6) return()
     
     # flip a coin (did the user use it today)
-    if (rbinom(1, 1, freq) == 0 ) return()
+    if (rbinom(1, 1, freq * daily_prob) == 0 ) return()
     
     # how long did they run it for?
     session_length <- rlnorm(1, meanlog = log(avg_session_mins), sdlog = 1)
@@ -46,8 +47,8 @@ user_sim <- function(userid = "name", freq = 0.5, simdate = ymd('2019-01-01')) {
     fake_pid <- runif(1, 1, 1000) %>% as.integer()
     
     log_lines <- c(
-        sprintf('%d, "%s", %d, "session_start", ""', fake_pid, userid, as.integer(session_start)),
-        sprintf('%d, "%s", %d, "session_quit", ""', fake_pid, userid, as.integer(session_end))
+        sprintf('%d, "%s", %d000, "session_start", ""', fake_pid, userid, as.integer(session_start)),
+        sprintf('%d, "%s", %d000, "session_quit", ""', fake_pid, userid, as.integer(session_end))
     )
 
     return(log_lines)

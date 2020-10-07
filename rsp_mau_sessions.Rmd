@@ -40,7 +40,7 @@ Log files to be processed: <li>
 
 ## Session Counts by user by month
 
-```{r}
+```{r message=FALSE}
 monthly_stats <- logs %>% 
   group_by(username, month) %>% 
   summarise(session_starts = n()) %>% 
