@@ -28,17 +28,17 @@ if (!interactive()) {
   p <- arg_parser("Monthly Active RStudio Server Pro User Counts")
   p <- add_argument(parser = p, 
                     arg = "--log-path", 
-                    help = paste0("Path to RStudio Session logs"),
+                    help = "Path to RStudio Session logs",
                     type = "character",
                     default = log_path)
   p <- add_argument(parser = p,
                     arg = "--min-date",
-                    help = paste0("Minimum date to compute monthly counts"),
+                    help = "Minimum date to compute monthly counts",
                     type = "character",
                     default = as.character(min_date))
   p <- add_argument(parser = p,
                     arg = "--csv-path",
-                    help = paste0("Path to write .csv file of user counts"),
+                    help = "Path to write .csv file of user counts",
                     type = "character",
                     default = csv_path)
   p <- add_argument(parser = p,
