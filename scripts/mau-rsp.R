@@ -25,7 +25,7 @@ print_dims <- function(dat) {
 # Parse arguments if run as CLI
 if (!interactive()) {
   library(argparser, quietly = TRUE)
-  p <- arg_parser("Monthly Active RStudio User Counts")
+  p <- arg_parser("Monthly Active RStudio Server Pro User Counts")
   p <- add_argument(parser = p, 
                     arg = "--log-path", 
                     help = paste0("Path to RStudio Session logs"),
