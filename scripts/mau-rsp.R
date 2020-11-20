@@ -50,6 +50,7 @@ if (!interactive()) {
   
   log_path <- argv$log_path
   min_date <- as.POSIXct(argv$min_date)
+  csv_path <- argv$csv_path
   debug <- argv$debug
 }
 
