@@ -6,7 +6,7 @@ log_path <- "/var/lib/rstudio-server/audit/r-sessions/r-sessions.csv"
 # Set minimum date - default is 1 year ago
 min_date <- as.POSIXct(Sys.Date() - 365)
 
-# Set CSV path for data write
+# Set CSV path for MAU data write
 csv_path <- gsub(" ", "-", paste0("./rsp-user-counts-", Sys.time(), ".csv"))
 
 # Set debug value
