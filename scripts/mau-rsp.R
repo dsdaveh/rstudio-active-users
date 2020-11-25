@@ -7,14 +7,14 @@ log_path <- "/var/lib/rstudio-server/audit/r-sessions/r-sessions.csv"
 min_date <- as.POSIXct(Sys.Date() - 365)
 
 # Set CSV path for data write
-csv_path <- paste0("./rsp-user-counts-", Sys.time(), ".csv")
+csv_path <- gsub(" ", "-", paste0("./rsp-user-counts-", Sys.time(), ".csv"))
 
 # Set debug value
 debug <- FALSE
 
 # Print Debug utility
 print_debug <- function(msg) {
-  if(debug) print(msg)
+  if(debug) cat(msg, "\n")
 }
 
 print_dims <- function(dat) {
@@ -37,7 +37,7 @@ if (!interactive()) {
                     type = "character",
                     default = as.character(min_date))
   p <- add_argument(parser = p,
-                    arg = "--csv-path",
+                    arg = "--output",
                     help = "Path to write .csv file of user counts",
                     type = "character",
                     default = csv_path)
@@ -50,7 +50,7 @@ if (!interactive()) {
   
   log_path <- argv$log_path
   min_date <- as.POSIXct(argv$min_date)
-  csv_path <- argv$csv_path
+  csv_path <- argv$output
   debug <- argv$debug
 }
 
@@ -79,21 +79,31 @@ print_debug("Filtering to session_start events")
 log_data <- log_data[grepl("session_start", log_data$type),]
 print_dims(log_data)
 
+# Select only timestamp, month, and username
+print_debug("Selecting only timestamp, month, and username")
+log_data <- log_data[,c("timestamp", "month", "username")]
+print_dims(log_data)
+
+# Count sessions per user per month
+print_debug("Counting sessions per user per month")
+user_session_counts <- as.data.frame(table(log_data$username, log_data$month))
+names(user_session_counts) <- c("username", "month", "sessions")
+
 # Summarize by unique username and month combinations
 print_debug("Summarizing by unique username and month combinations")
-log_data <- unique(log_data[,c("username", "month")])
-print_dims(log_data)
+monthly_users <- unique(log_data[,c("username", "month")])
+print_dims(monthly_users)
 
 # Calculate observations per month, which is equivalent to the number of active 
 # users per month
 print_debug("Calculating user counts by month")
-user_counts <- as.data.frame(table(log_data$month))
+user_counts <- as.data.frame(table(monthly_users$month))
 names(user_counts) <- c("Month", "Active User Count")
 print_dims(user_counts)
 
 # Write CSV
 print_debug(paste0("Writing user counts data to ", csv_path))
-write.csv(user_counts, csv_path)
+write.csv(user_session_counts, csv_path)
 
 # Print final user counts
 user_counts
