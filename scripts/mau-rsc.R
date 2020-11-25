@@ -2,46 +2,34 @@
 
 library(httr)
 
-connect_url <- "<CONNECT-URL>"
-connect_api_key <- "<CONNECT-API-KEY>"
+# Set CSV path for MAU data write
 csv_path <- gsub(" ", "-", paste0("./rsc-user-counts-", Sys.time(), ".csv"))
+
+# Set minimum date - default is 1 year ago
+min_date <- as.POSIXct(Sys.Date() - 365)
+
+# Set debug value
+debug <- FALSE
 
 # Print Debug utility
 print_debug <- function(msg) {
   if(debug) cat(msg, "\n")
 }
 
-# RSC API Request
-get_audit <- function(url) {
-  print_debug(paste0("Fetching audit logs from ", url))
-  resp <- GET(
-    url,
-    add_headers(Authorization = paste("Key", connect_api_key))
-  )
-  print_debug(paste0("Request status: ", resp$status_code))
-  payload <- content(resp, encoding = "UTF-8")
-  payload$results <- Reduce(rbind, lapply(payload$results, as.data.frame))
-  payload
-}
 
 if (!interactive()) {
    library(argparser, quietly = TRUE)
   p <- arg_parser("Monthly Active RStudio Connect User Counts")
-  p <- add_argument(parser = p, 
-                    arg = "--connect-url", 
-                    help = "URL for RStudio Connect",
-                    type = "character",
-                    default = connect_url)
-  p <- add_argument(parser = p,
-                    arg = "--api-key",
-                    help = "RStudio Connect API key for an admin user",
-                    type = "character",
-                    default = connect_api_key)
   p <- add_argument(parser = p,
                     arg = "--output",
                     help = paste0("Path to write .csv file of user counts"),
                     type = "character",
                     default = csv_path)
+  p <- add_argument(parser = p,
+                    arg = "--min-date",
+                    help = "Minimum date to compute monthly counts",
+                    type = "character",
+                    default = as.character(min_date))
   p <- add_argument(parser = p,
                     arg = "--debug",
                     help = "Enable debug output",
@@ -49,29 +37,37 @@ if (!interactive()) {
   
   argv <- parse_args(p)
   
-  connect_url <- argv$connect_url
-  connect_api_key <- argv$api_key
+  min_date <- as.POSIXct(argv$min_date)
   csv_path <- argv$output
 }
 
-# Request logs from RStudio Connect API
-audit_log_url <- paste0(connect_url, "/__api__/v1/audit_logs?ascOrder=false&limit=500")
-payload <- get_audit(audit_log_url)
-audit_log <- payload$results
+# Generate audit logs using the usermanager CLI and read them into R
+print_debug("Generating RStudio Connect audit log. Please note that RStudio 
+            Connect needs to be stopped in order to generate the audit log")
+audit_log <- read.csv(text = system2("/opt/rstudio-connect/bin/usermanager", c("audit", "--csv"), stdout = TRUE, stderr = FALSE),
+         stringsAsFactors = FALSE)
 
-while(!is.null(payload$paging[["next"]])) {
-  payload <- get_audit(payload$paging[["next"]])
-  audit_log <- rbind(audit_log, payload$results)
-}
+# Filter logs
+audit_log <- audit_log[audit_log$Action == "user_login", c("UserID", "UserDescription", "Time", "Action")]
 
-print_debug("Audit Log successfully retrieved")
-audit_log
+# Create month column
+audit_log$Time <- as.POSIXct(audit_log$Time)
+audit_log$Month <- format(audit_log$Time, format = "%m-%Y")
 
-# Parse logs
-
-
-z
+# Count user and month
+user_session_counts <- as.data.frame(table(audit_log$UserDescription, audit_log$Month))
+names(user_session_counts) <- c("user", "month", "sessions")
 
 # Unique user / month combinations
+monthly_users <- unique(audit_log_data[,c("UserDescription", "Month")])
 
-# 
+# Calculate observations per month, which is equivalent to the number of active 
+# users per month
+user_counts <- as.data.frame(table(monthly_users$Month))
+names(user_counts) <- c("Month", "Active User Count")
+
+# Write CSV
+write.csv(user_session_counts, csv_path)
+
+# Print final user counts
+user_counts
