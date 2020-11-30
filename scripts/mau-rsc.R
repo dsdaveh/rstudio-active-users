@@ -1,7 +1,5 @@
 #! /usr/local/bin/Rscript
 
-library(httr, quietly = TRUE)
-
 # Set CSV path for MAU data write
 csv_path <- gsub(" ", "-", paste0("./rsc-user-counts-", Sys.time(), ".csv"))
 
