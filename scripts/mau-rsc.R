@@ -1,6 +1,6 @@
 #! /usr/local/bin/Rscript
 
-library(httr)
+library(httr, quietly = TRUE)
 
 # Set CSV path for MAU data write
 csv_path <- gsub(" ", "-", paste0("./rsc-user-counts-", Sys.time(), ".csv"))
@@ -44,29 +44,41 @@ if (!interactive()) {
 # Generate audit logs using the usermanager CLI and read them into R
 print_debug("Generating RStudio Connect audit log. Please note that RStudio 
             Connect needs to be stopped in order to generate the audit log")
-audit_log <- read.csv(text = system2("/opt/rstudio-connect/bin/usermanager", c("audit", "--csv"), stdout = TRUE, stderr = FALSE),
-         stringsAsFactors = FALSE)
+audit_log <- read.csv(text = system2("/opt/rstudio-connect/bin/usermanager", 
+                                     c("audit", 
+                                       "--csvlog", 
+                                       paste0("--since ", as.Date(min_date))
+                                     ), 
+                                     stdout = TRUE, 
+                                     stderr = FALSE),
+                      stringsAsFactors = FALSE)
 
 # Filter logs
+print_debug("Filtering audit log")
 audit_log <- audit_log[audit_log$Action == "user_login", c("UserID", "UserDescription", "Time", "Action")]
 
 # Create month column
+print_debug("Extracting month from timestamp")
 audit_log$Time <- as.POSIXct(audit_log$Time)
 audit_log$Month <- format(audit_log$Time, format = "%m-%Y")
 
 # Count user and month
+print_debut("Counting sessions per user per month")
 user_session_counts <- as.data.frame(table(audit_log$UserDescription, audit_log$Month))
 names(user_session_counts) <- c("user", "month", "sessions")
 
 # Unique user / month combinations
+print_debug("Summarizing by unique username and month combinations")
 monthly_users <- unique(audit_log_data[,c("UserDescription", "Month")])
 
 # Calculate observations per month, which is equivalent to the number of active 
 # users per month
+print_debug("Calculating user counts by month")
 user_counts <- as.data.frame(table(monthly_users$Month))
 names(user_counts) <- c("Month", "Active User Count")
 
 # Write CSV
+print_debug(paste0("Writing user counts data to ", csv_path))
 write.csv(user_session_counts, csv_path)
 
 # Print final user counts
