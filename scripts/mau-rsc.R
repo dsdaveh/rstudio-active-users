@@ -19,15 +19,15 @@ if (!interactive()) {
    library(argparser, quietly = TRUE)
   p <- arg_parser("Monthly Active RStudio Connect User Counts")
   p <- add_argument(parser = p,
-                    arg = "--output",
-                    help = paste0("Path to write .csv file of user counts"),
-                    type = "character",
-                    default = csv_path)
-  p <- add_argument(parser = p,
                     arg = "--min-date",
                     help = "Minimum date to compute monthly counts",
                     type = "character",
                     default = as.character(min_date))
+  p <- add_argument(parser = p,
+                    arg = "--output",
+                    help = paste0("Path to write .csv file of user counts"),
+                    type = "character",
+                    default = csv_path)
   p <- add_argument(parser = p,
                     arg = "--debug",
                     help = "Enable debug output",
