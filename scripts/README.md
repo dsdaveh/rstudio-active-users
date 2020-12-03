@@ -28,7 +28,7 @@ package itself introduces no additional external dependencies.
 In order to install this package and make it available when running the scripts,
 execute the following:
 ```
-sudo /path/to/R -e "install.packages('argparser')"
+sudo /path/to/R -e "install.packages('argparser', repos = 'https://cran.rstudio.com/')"
 ```
 
 ### Usage
