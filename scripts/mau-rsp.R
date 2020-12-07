@@ -87,7 +87,7 @@ print_dims(log_data)
 # Count sessions per user per month
 print_debug("Counting sessions per user per month")
 user_session_counts <- as.data.frame(table(log_data$username, log_data$month))
-names(user_session_counts) <- c("username", "month", "sessions")
+names(user_session_counts) <- c("user", "month", "sessions")
 
 # Summarize by unique username and month combinations
 print_debug("Summarizing by unique username and month combinations")
