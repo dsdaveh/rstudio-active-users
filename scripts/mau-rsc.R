@@ -64,6 +64,8 @@ audit_log$Month <- format(audit_log$Time, format = "%m-%Y")
 print_debug("Counting sessions per user per month")
 user_session_counts <- as.data.frame(table(audit_log$UserDescription, audit_log$Month))
 names(user_session_counts) <- c("user", "month", "sessions")
+user_session_counts$active <- user_session_counts$sessions > 0
+user_session_counts$product <- "RStudio Connect"
 
 # Unique user / month combinations
 print_debug("Summarizing by unique username and month combinations")

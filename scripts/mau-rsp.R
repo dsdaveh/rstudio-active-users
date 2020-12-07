@@ -88,6 +88,8 @@ print_dims(log_data)
 print_debug("Counting sessions per user per month")
 user_session_counts <- as.data.frame(table(log_data$username, log_data$month))
 names(user_session_counts) <- c("user", "month", "sessions")
+user_session_counts$active <- user_session_counts$sessions > 0
+user_session_counts$product <- "RStudio Server Pro"
 
 # Summarize by unique username and month combinations
 print_debug("Summarizing by unique username and month combinations")
