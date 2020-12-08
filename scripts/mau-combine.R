@@ -57,4 +57,4 @@ combined_counts <- rbind(rsp_counts, rsc_counts)
 combined_counts <- combined_counts[order(combined_counts$month, combined_counts$user),]
 
 print_debug(paste0("Writing combined counts to ", csv_path))
-write.csv(combined_counts, csv_path)
+write.csv(combined_counts, csv_path, row.names = FALSE)

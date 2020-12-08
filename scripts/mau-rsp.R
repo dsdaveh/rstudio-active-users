@@ -105,7 +105,7 @@ print_dims(user_counts)
 
 # Write CSV
 print_debug(paste0("Writing user counts data to ", csv_path))
-write.csv(user_session_counts, csv_path)
+write.csv(user_session_counts, csv_path, row.names = FALSE)
 
 # Print final user counts
 user_counts
