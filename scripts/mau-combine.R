@@ -46,6 +46,10 @@ if (!interactive()) {
   csv_path <- argv$output
 }
 
+if (is.null(rsp_mau_path) | is.na(rsp_mau_path) | is.null(rsc_mau_path) | is.na(rsc_mau_path)) {
+  stop("Please provide a valid path for the output from both mau-rsp.R and mau-rsc.R")
+}
+
 print_debug(paste0("Reading ", rsp_mau_path))
 rsp_counts <- read.csv(rsp_mau_path, stringsAsFactors = FALSE)
 
