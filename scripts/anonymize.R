@@ -14,10 +14,10 @@ print_debug <- function(msg) {
 # Parse arguments if run as CLI
 if (!interactive()) {
   library(argparser, quietly = TRUE)
-  p <- arg_parser("Anonymize user counts data")
+  p <- arg_parser("Anonymize MAU user counts data")
   p <- add_argument(parser = p, 
                     arg = "--data-path", 
-                    help = "Path to counts output file",
+                    help = "Path to MAU counts output file",
                     type = "character",
                     default = data_path)
   p <- add_argument(parser = p,
@@ -36,6 +36,8 @@ if (!interactive()) {
   csv_path <- argv$output
   debug <- argv$debug
 }
+
+if (is.null(data_path)) stop("Please provide a valid path for input data")
 
 print_debug(paste0("Reading data: ", data_path))
 input_data <- read.csv(data_path, stringsAsFactors = FALSE)
