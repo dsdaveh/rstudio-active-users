@@ -41,8 +41,7 @@ if (!interactive()) {
 }
 
 # Generate audit logs using the usermanager CLI and read them into R
-print_debug("Generating RStudio Connect audit log. Please note that RStudio 
-            Connect needs to be stopped in order to generate the audit log")
+print_debug("Generating RStudio Connect audit log. Please note that RStudio Connect needs to be stopped in order to generate the audit log if you use the SQLite database provider.")
 audit_log <- read.csv(text = system2("/opt/rstudio-connect/bin/usermanager", 
                                      c("audit", 
                                        "--csv", 

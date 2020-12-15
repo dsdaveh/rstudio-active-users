@@ -73,7 +73,8 @@ optional arguments:
 The `mau-rsc.R` script uses the `usermanager` cli to generate the log file
 needed to calculate monthly users. In order for the CLI to be used, [RStudio
 Connect must be
-stopped](https://docs.rstudio.com/connect/admin/server-management/#stopping-starting).
+stopped](https://docs.rstudio.com/connect/admin/server-management/#stopping-starting)
+if you use the SQLite database provider.
 **It is recommended to run this script with root privileges on the RStudio
 Connect server.**
 
