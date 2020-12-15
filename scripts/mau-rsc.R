@@ -37,6 +37,7 @@ if (!interactive()) {
   
   min_date <- as.POSIXct(argv$min_date)
   csv_path <- argv$output
+  debug <- argv$debug
 }
 
 # Generate audit logs using the usermanager CLI and read them into R

@@ -44,6 +44,7 @@ if (!interactive()) {
   rsp_mau_path <- argv$rsp_path
   rsc_mau_path <- argv$rsc_path
   csv_path <- argv$output
+  debug <- argv$debug
 }
 
 if (is.null(rsp_mau_path) | is.na(rsp_mau_path) | is.null(rsc_mau_path) | is.na(rsc_mau_path)) {
