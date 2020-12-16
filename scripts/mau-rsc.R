@@ -5,6 +5,7 @@ csv_path <- gsub(" ", "-", paste0("./rsc-user-counts-", Sys.time(), ".csv"))
 
 # Set minimum date - default is 1 year ago
 min_date <- as.POSIXct(Sys.Date() - 365)
+max_date <- as.POSIXct(Sys.Date() + 1)
 
 # Set debug value
 debug <- FALSE
@@ -24,6 +25,11 @@ if (!interactive()) {
                     type = "character",
                     default = as.character(min_date))
   p <- add_argument(parser = p,
+                    arg = "--max-date",
+                    help = "Maximum date to compute monthly counts",
+                    type = "character",
+                    default = as.character(max_date))
+  p <- add_argument(parser = p,
                     arg = "--output",
                     help = paste0("Path to write .csv file of user counts"),
                     type = "character",
@@ -36,6 +42,7 @@ if (!interactive()) {
   argv <- parse_args(p)
   
   min_date <- as.POSIXct(argv$min_date)
+  max_date <- as.POSIXct(argv$max_date)
   csv_path <- argv$output
   debug <- argv$debug
 }
@@ -45,7 +52,8 @@ print_debug("Generating RStudio Connect audit log. Please note that RStudio Conn
 audit_log <- read.csv(text = system2("/opt/rstudio-connect/bin/usermanager", 
                                      c("audit", 
                                        "--csv", 
-                                       paste0("--since ", as.Date(min_date))
+                                       paste0("--since ", as.Date(min_date)),
+                                       paste0("--until ", as.Date(max_date))
                                      ), 
                                      stdout = TRUE, 
                                      stderr = FALSE),
