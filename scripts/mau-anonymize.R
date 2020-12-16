@@ -40,7 +40,9 @@ if (!interactive()) {
 if (is.null(data_path) | is.na(data_path)) stop("Please provide a valid path for input data")
 
 print_debug(paste0("Reading data: ", data_path))
-input_data <- read.csv(data_path, stringsAsFactors = FALSE)
+input_data <- read.csv(data_path, 
+                       stringsAsFactors = FALSE,
+                       strip.white = TRUE)
 
 print_debug("Anonymizing users")
 users <- sample(unique(input_data$user))

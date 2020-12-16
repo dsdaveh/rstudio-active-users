@@ -25,7 +25,7 @@ print_dims <- function(dat) {
 count_metric <- function(log_data, metric) {
   print_debug(paste0("Calculating ", metric, " counts ----"))
   print_debug(paste0("\tFiltering to ", metric, " events"))
-  log_data <- log_data[grepl(metric, log_data$type), ]
+  log_data <- log_data[metric == log_data$type, ]
   
   print_debug("\tSelecting only timestamp, month, and username")
   log_data <- log_data[,c("timestamp", "month", "username")]
@@ -75,7 +75,9 @@ if (!interactive()) {
 
 # Read log data
 print_debug(paste0("Reading data: ", log_path))
-log_data <- read.csv(log_path, stringsAsFactors = FALSE)
+log_data <- read.csv(log_path, 
+                     stringsAsFactors = FALSE, 
+                     strip.white = TRUE)
 print_dims(log_data)
 
 # Convert timestamp from numeric

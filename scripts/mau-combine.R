@@ -52,13 +52,19 @@ if (is.null(rsp_mau_path) | is.na(rsp_mau_path) | is.null(rsc_mau_path) | is.na(
 }
 
 print_debug(paste0("Reading ", rsp_mau_path))
-rsp_counts <- read.csv(rsp_mau_path, stringsAsFactors = FALSE)
+rsp_counts <- read.csv(rsp_mau_path, 
+                       stringsAsFactors = FALSE,
+                       strip.white = TRUE)
 
 print_debug(paste0("Reading ", rsc_mau_path))
-rsc_counts <- read.csv(rsc_mau_path, stringsAsFactors = FALSE)
+rsc_counts <- read.csv(rsc_mau_path, 
+                       stringsAsFactors = FALSE,
+                       strip.white = TRUE)
 
 print_debug("Combining user counts")
-combined_counts <- rbind(rsp_counts, rsc_counts)
+selected_columns <- c("month", "user", "product", "active")
+combined_counts <- rbind(rsp_counts[,selected_columns], 
+                         rsc_counts[,selected_columns])
 combined_counts <- combined_counts[order(combined_counts$month, combined_counts$user),]
 
 print_debug(paste0("Writing combined counts to ", csv_path))

@@ -57,7 +57,8 @@ audit_log <- read.csv(text = system2("/opt/rstudio-connect/bin/usermanager",
                                      ), 
                                      stdout = TRUE, 
                                      stderr = FALSE),
-                      stringsAsFactors = FALSE)
+                      stringsAsFactors = FALSE,
+                      strip.white = TRUE)
 
 # Filter logs
 print_debug("Filtering audit log")
