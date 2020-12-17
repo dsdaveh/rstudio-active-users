@@ -19,7 +19,26 @@ print_debug <- function(msg) {
 
 print_dims <- function(dat) {
   dims <- dim(dat)
-  print_debug(paste0("Data dimensions: ", paste0(dims[1], " x ", dims[2])))
+  print_debug(paste0("\tData dimensions: ", paste0(dims[1], " x ", dims[2])))
+}
+
+count_metric <- function(log_data, metric) {
+  print_debug(paste0("Calculating ", metric, " counts ----"))
+  print_debug(paste0("\tFiltering to ", metric, " events"))
+  log_data <- log_data[metric == log_data$type, ]
+  
+  print_debug("\tSelecting only timestamp, month, and username")
+  log_data <- log_data[,c("timestamp", "month", "username")]
+  print_dims(log_data)
+  
+  # Count sessions per user per month
+  print_debug(paste0("\tCounting ", metric, " events per user per month"))
+  user_metric_counts <- as.data.frame(table(log_data$username, log_data$month))
+  names(user_metric_counts) <- c("user", "month", metric)
+  user_metric_counts$product <- "RStudio Server Pro"
+  print_debug(paste0("Finished calculating ", metric, " counts ----"))
+  
+  user_metric_counts
 }
 
 # Parse arguments if run as CLI
@@ -54,10 +73,11 @@ if (!interactive()) {
   debug <- argv$debug
 }
 
-
 # Read log data
 print_debug(paste0("Reading data: ", log_path))
-log_data <- read.csv(log_path, stringsAsFactors = FALSE)
+log_data <- read.csv(log_path, 
+                     stringsAsFactors = FALSE, 
+                     strip.white = TRUE)
 print_dims(log_data)
 
 # Convert timestamp from numeric
@@ -74,36 +94,32 @@ print_dims(log_data)
 print_debug("Extracting month from timestamp")
 log_data$month <- format(log_data$timestamp, format = "%m-%Y")
 
-# Filter only to "session_start" events
-print_debug("Filtering to session_start events")
-log_data <- log_data[grepl("session_start", log_data$type),]
-print_dims(log_data)
+# Count session_start events
+session_counts <- count_metric(log_data, "session_start")
 
-# Select only timestamp, month, and username
-print_debug("Selecting only timestamp, month, and username")
-log_data <- log_data[,c("timestamp", "month", "username")]
-print_dims(log_data)
+# Count auth_login events
+login_counts <- count_metric(log_data, "auth_login$")
 
-# Count sessions per user per month
-print_debug("Counting sessions per user per month")
-user_session_counts <- as.data.frame(table(log_data$username, log_data$month))
-names(user_session_counts) <- c("username", "month", "sessions")
+# Combine data
+print_debug("Combining login and session counts")
+all_counts <- merge(session_counts, login_counts, all = TRUE)
+names(all_counts) <- c("user", "month", "product", "sessions", "logins")
+all_counts$sessions[is.na(all_counts$sessions)] <- 0
+all_counts$logins[is.na(all_counts$logins)] <- 0
 
-# Summarize by unique username and month combinations
-print_debug("Summarizing by unique username and month combinations")
-monthly_users <- unique(log_data[,c("username", "month")])
-print_dims(monthly_users)
+# Create active column indicating the user logged in OR started a session
+print_debug("Identifying active users")
+all_counts$active <- all_counts$sessions > 0 | all_counts$logins > 0
 
-# Calculate observations per month, which is equivalent to the number of active 
-# users per month
-print_debug("Calculating user counts by month")
-user_counts <- as.data.frame(table(monthly_users$month))
-names(user_counts) <- c("Month", "Active User Count")
-print_dims(user_counts)
+# Count monthly active users
+print_debug("Counting monthly active users")
+mau_counts <- unique(all_counts[all_counts$active, c("user", "month", "active")])
+mau_counts <- as.data.frame(table(mau_counts$month))
+names(mau_counts) <- c("Month", "Active User Count")
 
 # Write CSV
 print_debug(paste0("Writing user counts data to ", csv_path))
-write.csv(user_session_counts, csv_path)
+write.csv(all_counts, csv_path, row.names = FALSE)
 
 # Print final user counts
-user_counts
+print(mau_counts, row.names = FALSE)
