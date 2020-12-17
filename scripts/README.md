@@ -13,7 +13,7 @@ to `Rscript` before running the script:
 ```
 
 If Rscript is available in `/usr/local/bin/`, then you can simply execute the
-file:
+files:
 ```
 ./mau-rsp.R
 ```
@@ -49,7 +49,7 @@ therefore **it is recommended to run this script with root privileges on the
 RStudio Server Pro server.**
 
 ```bash
-./mau-rsp.R -h
+$ ./mau-rsp.R -h
 usage: mau-rsp.R [--] [--help] [--debug] [--opts OPTS] [--log-path
        LOG-PATH] [--min-date MIN-DATE] [--output OUTPUT]
 
@@ -64,9 +64,9 @@ optional arguments:
   -l, --log-path  Path to RStudio Session logs [default:
                   /var/lib/rstudio-server/audit/r-sessions/r-sessions.csv]
   -m, --min-date  Minimum date to compute monthly counts [default:
-                  2019-12-01]
+                  2019-12-17 17:00:00]
   -o, --output    Path to write .csv file of user counts [default:
-                  ./rsp-user-counts-2020-11-30-22:21:54.csv]
+                  ./rsp-user-counts-2020-12-17-10:27:32.csv]
 ```
 
 #### RStudio Connect
@@ -79,9 +79,9 @@ if you use the SQLite database provider.
 Connect server.**
 
 ```bash
-./mau-rsc.R -h
+$ ./mau-rsc.R -h                                                      
 usage: mau-rsc.R [--] [--help] [--debug] [--opts OPTS] [--min-date
-       MIN-DATE] [--output OUTPUT]
+       MIN-DATE] [--max-date MAX-DATE] [--output OUTPUT]
 
 Monthly Active RStudio Connect User Counts
 
@@ -92,12 +92,66 @@ flags:
 optional arguments:
   -x, --opts      RDS file containing argument values
   -m, --min-date  Minimum date to compute monthly counts [default:
-                  2019-12-01]
+                  2019-12-17 17:00:00]
+  --max-date      Maximum date to compute monthly counts [default:
+                  2020-12-17 17:00:00]
   -o, --output    Path to write .csv file of user counts [default:
-                  ./rsc-user-counts-2020-11-30-22:24:20.csv]
+                  ./rsc-user-counts-2020-12-17-10:28:08.csv]
 ```
 
 ### Output
 Each script will print a table of monthly user counts to `stdout`. It will also
 write a csv file containing more specific information about individual user
-sessions per month.
+activity per month.
+
+### Combine
+The `mau-combine.R` script can be used to combine the CSV output from
+`mau-rsp.R` and `mau-rsc.R`. This can be helpful in order to easily identify
+users who are using both RStudio Server Pro and RStudio Connect.
+
+```bash
+$ ./mau-combine.R -h
+usage: mau-combine.R [--] [--help] [--debug] [--opts OPTS] [--rsp-path
+       RSP-PATH] [--rsc-path RSC-PATH] [--output OUTPUT]
+
+Combine Monthly Active User Counts
+
+flags:
+  -h, --help      show this help message and exit
+  -d, --debug     Enable debug output
+
+optional arguments:
+  -x, --opts      RDS file containing argument values
+  -r, --rsp-path  Path to output from mau-rsp
+  --rsc-path      Path to output from mau-rsc
+  -o, --output    Path to write combined .csv file of user counts
+                  [default: ./combined-mau-counts-2020-12-17
+                  11:09:23.csv]
+```
+
+The output of the script is a CSV file containing combined data from the two
+input files.
+
+### Anonymize
+In the event that you want to anonymize users in the output file, the
+`mau-anonymize.R` script can be used to randomly anonymize users by assigning
+them a numeric ID.
+
+```bash
+$ ./mau-anonymize.R -h
+usage: mau-anonymize.R [--] [--help] [--debug] [--opts OPTS]
+       [--data-path DATA-PATH] [--output OUTPUT]
+
+Anonymize MAU user counts data
+
+flags:
+  -h, --help       show this help message and exit
+  --debug          Enable debug output
+
+optional arguments:
+  -x, --opts       RDS file containing argument values
+  -d, --data-path  Path to MAU counts output file
+  -o, --output     Path to write .csv file of anonymized user counts
+                   [default: ./anonymized-mau-counts-2020-12-17
+                   11:10:44.csv]
+```
