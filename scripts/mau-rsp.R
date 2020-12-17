@@ -98,7 +98,7 @@ log_data$month <- format(log_data$timestamp, format = "%m-%Y")
 session_counts <- count_metric(log_data, "session_start")
 
 # Count auth_login events
-login_counts <- count_metric(log_data, "auth_login$")
+login_counts <- count_metric(log_data, "auth_login")
 
 # Combine data
 print_debug("Combining login and session counts")
