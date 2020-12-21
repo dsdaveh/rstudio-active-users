@@ -60,7 +60,7 @@ audit_log <- read.csv(text = system2("/opt/rstudio-connect/bin/usermanager",
                       stringsAsFactors = FALSE,
                       strip.white = TRUE,
                       header = FALSE)
-names(audit_log) <- c("ID", "Time", "UesrID", "UserDescription", "Action", "EventDescription")
+names(audit_log) <- c("ID", "Time", "UserId", "UserDescription", "Action", "EventDescription")
 
 # Filter logs
 print_debug("Filtering audit log")
