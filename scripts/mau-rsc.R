@@ -51,14 +51,16 @@ if (!interactive()) {
 print_debug("Generating RStudio Connect audit log. Please note that RStudio Connect needs to be stopped in order to generate the audit log if you use the SQLite database provider.")
 audit_log <- read.csv(text = system2("/opt/rstudio-connect/bin/usermanager", 
                                      c("audit", 
-                                       "--csv", 
+                                       "--csvlog", 
                                        paste0("--since ", as.Date(min_date)),
                                        paste0("--until ", as.Date(max_date))
                                      ), 
                                      stdout = TRUE, 
                                      stderr = FALSE),
                       stringsAsFactors = FALSE,
-                      strip.white = TRUE)
+                      strip.white = TRUE,
+                      header = FALSE)
+names(audit_log) <- c("ID", "Time", "UesrID", "UserDescription", "Action", "EventDescription")
 
 # Filter logs
 print_debug("Filtering audit log")
